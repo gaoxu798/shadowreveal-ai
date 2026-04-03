@@ -16,9 +16,10 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const item = getItemBySlug(params.id);
+  const { id } = await params;
+  const item = getItemBySlug(id);
   if (!item) return { title: "Theory Not Found — ShadowReveal.AI" };
 
   return {
@@ -43,8 +44,9 @@ export async function generateMetadata({
 /* ─────────────────────────────────────────────────────────────
    Page
 ───────────────────────────────────────────────────────────── */
-export default function TheoryPage({ params }: { params: { id: string } }) {
-  const item = getItemBySlug(params.id);
+export default async function TheoryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const item = getItemBySlug(id);
   if (!item) notFound();
 
   return (
@@ -74,13 +76,10 @@ export default function TheoryPage({ params }: { params: { id: string } }) {
         {/* Back arrow */}
         <Link
           href="/#gallery"
-          className="absolute top-6 left-6 flex items-center gap-2 text-[11px] tracking-[0.25em] uppercase transition-colors duration-200"
+          className="absolute top-6 left-6 flex items-center gap-2 text-[11px] tracking-[0.25em] uppercase transition-colors duration-200 text-[rgba(184,134,11,0.6)] hover:text-[rgba(184,134,11,1)]"
           style={{
             fontFamily: "var(--font-body)",
-            color: "rgba(184,134,11,0.6)",
           }}
-          onMouseOver={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(184,134,11,1)")}
-          onMouseOut={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(184,134,11,0.6)")}
         >
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-4 h-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 10H5M10 5l-5 5 5 5" />
@@ -202,16 +201,9 @@ export default function TheoryPage({ params }: { params: { id: string } }) {
                 <Link
                   key={related.slug}
                   href={`/gallery/${related.slug}`}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group border border-[rgba(255,255,255,0.04)] hover:border-[rgba(184,134,11,0.18)]"
                   style={{
                     background: "rgba(8,4,4,0.35)",
-                    border: "1px solid rgba(255,255,255,0.04)",
-                  }}
-                  onMouseOver={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(184,134,11,0.18)";
-                  }}
-                  onMouseOut={(e) => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.04)";
                   }}
                 >
                   <img
