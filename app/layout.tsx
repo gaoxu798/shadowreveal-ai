@@ -49,6 +49,11 @@ export const metadata: Metadata = {
       "The sovereign has been hidden for 800 years. AI-powered lore analysis to reveal the face of Im-sama.",
     type: "website",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+  },
 };
 
 /* ─────────────────────────────────────────────

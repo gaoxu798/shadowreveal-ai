@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1a0000"/>
+      <stop offset="100%" stop-color="#030303"/>
+    </radialGradient>
+    <radialGradient id="iris" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#ff2200"/>
+      <stop offset="40%" stop-color="#cc0000"/>
+      <stop offset="75%" stop-color="#7a0000"/>
+      <stop offset="100%" stop-color="#2a0000"/>
+    </radialGradient>
+    <radialGradient id="pupil" cx="45%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#1a0000"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="32" height="32" rx="5" fill="url(#bg)"/>
+
+  <!-- Eye white / sclera (almond shape) -->
+  <ellipse cx="16" cy="16" rx="12" ry="7" fill="#1a0505" opacity="0.6"/>
+
+  <!-- Iris -->
+  <ellipse cx="16" cy="16" rx="7.5" ry="7.5" fill="url(#iris)" filter="url(#glow)"/>
+
+  <!-- Iris ring detail -->
+  <ellipse cx="16" cy="16" rx="7.5" ry="7.5" fill="none" stroke="rgba(220,80,0,0.4)" stroke-width="0.6"/>
+  <ellipse cx="16" cy="16" rx="5.5" ry="5.5" fill="none" stroke="rgba(180,50,0,0.3)" stroke-width="0.4"/>
+
+  <!-- Pupil -->
+  <ellipse cx="16" cy="16" rx="3.2" ry="3.8" fill="url(#pupil)"/>
+
+  <!-- Highlight -->
+  <ellipse cx="13.5" cy="13.5" rx="1.2" ry="0.8" fill="rgba(255,200,180,0.55)" transform="rotate(-20,13.5,13.5)"/>
+  <ellipse cx="18" cy="14" rx="0.5" ry="0.35" fill="rgba(255,200,180,0.3)"/>
+
+  <!-- Upper eyelid -->
+  <path d="M4 16 Q16 6 28 16" fill="none" stroke="rgba(184,134,11,0.7)" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Lower eyelid -->
+  <path d="M4 16 Q16 23 28 16" fill="none" stroke="rgba(184,134,11,0.5)" stroke-width="0.8" stroke-linecap="round"/>
+
+  <!-- Corner tearduct left -->
+  <ellipse cx="4.5" cy="16" rx="1.2" ry="0.9" fill="rgba(120,0,0,0.5)"/>
+  <!-- Corner tearduct right -->
+  <ellipse cx="27.5" cy="16" rx="1.2" ry="0.9" fill="rgba(120,0,0,0.5)"/>
+
+  <!-- Gold rim glow -->
+  <ellipse cx="16" cy="16" rx="7.8" ry="7.8" fill="none" stroke="rgba(184,134,11,0.25)" stroke-width="0.5"/>
+</svg>
