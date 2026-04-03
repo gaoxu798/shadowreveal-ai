@@ -2,22 +2,176 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────
+   Design Tokens — Void Century Palette
+───────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --abyss:        #030303;
+  --abyss-mid:    #0a0a0a;
+  --crimson:      #dc2626;
+  --crimson-deep: #990000;
+  --crimson-void: #330000;
+  --gold:         #b8860b;
+  --gold-faint:   #8a6914;
+  --ash:          #d1d5db;
+  --ash-dim:      #9ca3af;
+  --border-dim:   rgba(220, 38, 38, 0.12);
+  --border-glow:  rgba(220, 38, 38, 0.35);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─────────────────────────────────────────────
+   Base Reset & Typography
+───────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─────────────────────────────────────────────
+   Abyss Background
+   Layers (bottom → top):
+     1. Deep abyss base (#030303)
+     2. Fixed radial: faint crimson sovereign glow at top-center
+     3. Fixed radial: warm depth vignette at center
+───────────────────────────────────────────── */
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--abyss);
+  background-image:
+    radial-gradient(
+      ellipse 70% 35% at 50% -5%,
+      rgba(51, 0, 0, 0.72) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 55% 55% at 50% 50%,
+      rgba(14, 8, 8, 0.5) 0%,
+      transparent 80%
+    );
+  background-attachment: fixed;
+  color: var(--ash);
+  font-family: var(--font-body), system-ui, sans-serif;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ─────────────────────────────────────────────
+   Cinematic Grain Overlay
+   SVG feTurbulence noise pinned to the viewport.
+   opacity micro (0.028) — felt, not seen.
+───────────────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23grain)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 0.028;
+  mix-blend-mode: overlay;
+}
+
+/* ─────────────────────────────────────────────
+   Typography Hierarchy
+───────────────────────────────────────────── */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading), "Georgia", serif;
+  color: var(--ash);
+  letter-spacing: 0.02em;
+}
+
+p, li, span {
+  line-height: 1.72;
+}
+
+/* ─────────────────────────────────────────────
+   Scrollbar — the void
+───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--abyss);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--crimson-deep);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--crimson);
+}
+
+/* ─────────────────────────────────────────────
+   Utility: gold gradient text
+───────────────────────────────────────────── */
+.text-gold-gradient {
+  background: linear-gradient(
+    128deg,
+    #6b4a00 0%,
+    #c8920a 14%,
+    #f0c842 28%,
+    #e8b830 38%,
+    #b8860b 52%,
+    #f5d060 63%,
+    #c9a030 74%,
+    #8a6200 86%,
+    #d4a020 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* text-shadow still renders under transparent fill without breaking background-clip */
+  text-shadow: 0 0 28px rgba(184,134,11,0.28), 0 2px 6px rgba(0,0,0,0.7);
+}
+
+/* ─────────────────────────────────────────────
+   Utility: void border (dim by default, glows on focus)
+───────────────────────────────────────────── */
+.border-void {
+  border: 1px solid var(--border-dim);
+  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.04) inset;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.border-void:hover,
+.border-void:focus-within {
+  border-color: var(--border-glow);
+  box-shadow:
+    0 0 18px rgba(220, 38, 38, 0.08) inset,
+    0 0 24px rgba(220, 38, 38, 0.06);
+}
+
+/* ─────────────────────────────────────────────
+   Utility: section divider — faded gold rule
+───────────────────────────────────────────── */
+.divider-royal {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(184, 134, 11, 0.25) 30%,
+    rgba(184, 134, 11, 0.25) 70%,
+    transparent
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Selection color
+───────────────────────────────────────────── */
+::selection {
+  background: rgba(153, 0, 0, 0.45);
+  color: #fff;
 }
 
 @layer utilities {
