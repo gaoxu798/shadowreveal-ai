@@ -26,7 +26,7 @@ export async function getPayPalAccessToken(): Promise<string> {
   return data.access_token as string;
 }
 
-export async function createPayPalOrder(planId: PlanId, accessToken: string) {
+export async function createPayPalOrder(planId: PlanId, accessToken: string, baseUrl: string) {
   const plan = PLANS[planId];
   const res = await fetch(`${PAYPAL_BASE}/v2/checkout/orders`, {
     method: "POST",
@@ -38,12 +38,16 @@ export async function createPayPalOrder(planId: PlanId, accessToken: string) {
       intent: "CAPTURE",
       purchase_units: [{
         description: plan.name,
-        amount: {
-          currency_code: "USD",
-          value: plan.price,
-        },
+        amount: { currency_code: "USD", value: plan.price },
         custom_id: planId,
       }],
+      application_context: {
+        return_url: `${baseUrl}/payment/success`,
+        cancel_url: `${baseUrl}/payment/cancel`,
+        brand_name: "ShadowReveal.AI",
+        landing_page: "BILLING",
+        user_action: "PAY_NOW",
+      },
     }),
   });
 

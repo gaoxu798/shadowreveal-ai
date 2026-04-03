@@ -109,39 +109,19 @@ const TIERS = [
 ───────────────────────────────────────────────────────────── */
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
 
-async function handlePayPalCheckout(planId: string, onSuccess: (credits: number) => void) {
+async function handlePayPalCheckout(planId: string, onError: () => void) {
   try {
-    // Create order
-    const orderRes = await fetch("/api/paypal/create-order", {
+    const res = await fetch("/api/paypal/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ planId }),
     });
-    const { orderId } = await orderRes.json();
-    if (!orderId) throw new Error("Failed to create order");
-
-    // Open PayPal approval URL
-    const approvalUrl = `https://www.sandbox.paypal.com/checkoutnow?token=${orderId}`;
-    const popup = window.open(approvalUrl, "paypal_checkout", "width=500,height=700");
-
-    // Poll for popup close
-    const pollTimer = setInterval(async () => {
-      if (popup?.closed) {
-        clearInterval(pollTimer);
-        // Capture order
-        const captureRes = await fetch("/api/paypal/capture-order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId }),
-        });
-        const data = await captureRes.json();
-        if (data.success) {
-          onSuccess(data.credits);
-        }
-      }
-    }, 500);
+    const data = await res.json();
+    if (!data.approvalUrl) throw new Error("No approval URL");
+    window.location.href = data.approvalUrl;
   } catch {
     toast.error("Payment error", { description: "Could not initiate checkout." });
+    onError();
   }
 }
 
@@ -301,13 +281,7 @@ function TierCard({ tier, index }: { tier: (typeof TIERS)[number]; index: number
           onClick={() => {
             if (tier.id === "wanderer") { document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" }); return; }
             setPaying(true);
-            handlePayPalCheckout(tier.id, (credits) => {
-              setPaying(false);
-              toast.success("Payment successful!", {
-                description: `${tier.id === "crafter" ? 50 : 200} credits added to your account.`,
-                style: { borderLeft: "3px solid #b8860b" },
-              });
-            });
+            handlePayPalCheckout(tier.id, () => setPaying(false));
           }}
           className="relative w-full rounded-xl overflow-hidden px-6 py-3.5 text-[13px] tracking-[0.1em] font-medium transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
