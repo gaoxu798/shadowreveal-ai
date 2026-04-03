@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 
 export const runtime = "edge";
 
@@ -6,6 +7,28 @@ const IMAGE_PREFIX =
   "Masterpiece, extremely detailed anime style, One Piece art style, void century ancient sovereign,";
 const IMAGE_SUFFIX =
   ", dark cinematic lighting, glowing scarlet eyes, ancient crown, flowing void robes, 8k resolution, dramatic shadows";
+
+const ANON_LIMIT = 1;
+const USER_LIMIT = 3;
+const COOKIE_NAME = "sr_gen_count";
+
+function getCount(req: NextRequest, key: string): number {
+  const raw = req.cookies.get(COOKIE_NAME)?.value ?? "{}";
+  try {
+    const parsed = JSON.parse(raw);
+    return Number(parsed[key] ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+function buildUpdatedCookie(req: NextRequest, key: string): string {
+  const raw = req.cookies.get(COOKIE_NAME)?.value ?? "{}";
+  let parsed: Record<string, number> = {};
+  try { parsed = JSON.parse(raw); } catch {}
+  parsed[key] = (Number(parsed[key] ?? 0)) + 1;
+  return JSON.stringify(parsed);
+}
 
 async function generateLoreText(userPrompt: string, apiKey: string): Promise<string> {
   const res = await fetch("https://api.siliconflow.cn/v1/chat/completions", {
@@ -22,10 +45,7 @@ async function generateLoreText(userPrompt: string, apiKey: string): Promise<str
           content:
             "You are a dark fantasy lore narrator for a One Piece fan site. Based on the user's character theory, write a vivid, atmospheric 2-3 sentence description of this ancient sovereign. Use poetic, ominous language. Do not mention any real One Piece character names. Output only the description, no quotes or labels.",
         },
-        {
-          role: "user",
-          content: userPrompt,
-        },
+        { role: "user", content: userPrompt },
       ],
       max_tokens: 180,
       temperature: 0.85,
@@ -39,6 +59,27 @@ async function generateLoreText(userPrompt: string, apiKey: string): Promise<str
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Auth & quota check ──────────────────────────────────
+    const session = await auth();
+    const userId = session?.user?.id;
+    const cookieKey = userId ?? "anon";
+    const limit = userId ? USER_LIMIT : ANON_LIMIT;
+    const used = getCount(req, cookieKey);
+
+    if (used >= limit) {
+      return NextResponse.json(
+        {
+          error: userId
+            ? "You've used all 3 free generations. Upgrade for unlimited access."
+            : "Sign in with Google to get 3 free generations.",
+          limitReached: true,
+          isLoggedIn: !!userId,
+        },
+        { status: 429 }
+      );
+    }
+
+    // ── Parse body ──────────────────────────────────────────
     const body = await req.json();
     const userPrompt: string = (body.prompt ?? "").trim();
 
@@ -49,7 +90,7 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.SILICONFLOW_KEY ?? "";
     const fullImagePrompt = `${IMAGE_PREFIX} ${userPrompt}${IMAGE_SUFFIX}`;
 
-    // Run image generation and lore text in parallel
+    // ── Generate image + lore in parallel ───────────────────
     const [imageRes, loreText] = await Promise.all([
       fetch("https://api.siliconflow.cn/v1/image/generations", {
         method: "POST",
@@ -85,7 +126,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ imageUrl, loreText });
+    // ── Increment counter cookie ────────────────────────────
+    const updatedCookie = buildUpdatedCookie(req, cookieKey);
+    const response = NextResponse.json({ imageUrl, loreText });
+    response.cookies.set(COOKIE_NAME, updatedCookie, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      sameSite: "lax",
+      path: "/",
+    });
+
+    return response;
   } catch (err) {
     console.error("[generate] Unexpected error:", err);
     return NextResponse.json(

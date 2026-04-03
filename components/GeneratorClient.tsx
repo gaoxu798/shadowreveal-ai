@@ -675,6 +675,19 @@ export default function GeneratorClient() {
 
       const data = await res.json();
 
+      if (res.status === 429 && data.limitReached) {
+        toast.error(data.isLoggedIn ? "No credits remaining" : "Sign in required", {
+          description: data.error,
+          duration: 6000,
+          style: { borderLeft: "3px solid #b8860b" },
+          action: data.isLoggedIn
+            ? { label: "Upgrade", onClick: () => { window.location.href = "#pricing"; } }
+            : { label: "Sign in", onClick: () => { window.location.href = "/api/auth/signin"; } },
+        });
+        setPhase("idle");
+        return;
+      }
+
       if (!res.ok || !data.imageUrl) {
         throw new Error(data.error ?? "Generation failed.");
       }
