@@ -1,4 +1,4 @@
-const PAYPAL_BASE = "https://api-m.sandbox.paypal.com";
+const PAYPAL_BASE = "https://api-m.paypal.com";
 
 export const PLANS = {
   "crafter":   { price: "3.99",  credits: 50,  name: "Theory Crafter — 50 Reveals" },
