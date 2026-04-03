@@ -11,6 +11,7 @@ const IMAGE_SUFFIX =
 const ANON_LIMIT = 1;
 const USER_LIMIT = 3;
 const COOKIE_NAME = "sr_gen_count";
+const PAID_COOKIE = "sr_paid_credits";
 
 function getCount(req: NextRequest, key: string): number {
   const raw = req.cookies.get(COOKIE_NAME)?.value ?? "{}";
@@ -62,11 +63,17 @@ export async function POST(req: NextRequest) {
     // ── Auth & quota check ──────────────────────────────────
     const session = await auth();
     const userId = session?.user?.id;
+
+    // Check paid credits first
+    const paidCredits = parseInt(req.cookies.get(PAID_COOKIE)?.value ?? "0") || 0;
+
     const cookieKey = userId ?? "anon";
     const limit = userId ? USER_LIMIT : ANON_LIMIT;
     const used = getCount(req, cookieKey);
 
-    if (used >= limit) {
+    const hasPaidCredits = paidCredits > 0;
+
+    if (!hasPaidCredits && used >= limit) {
       return NextResponse.json(
         {
           error: userId
@@ -126,15 +133,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Increment counter cookie ────────────────────────────
-    const updatedCookie = buildUpdatedCookie(req, cookieKey);
-    const response = NextResponse.json({ imageUrl, loreText });
-    response.cookies.set(COOKIE_NAME, updatedCookie, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-      sameSite: "lax",
-      path: "/",
+    // ── Deduct paid credit or increment free counter ────────
+    const response = NextResponse.json({
+      imageUrl,
+      loreText,
+      creditsRemaining: hasPaidCredits ? paidCredits - 1 : undefined,
     });
+
+    if (hasPaidCredits) {
+      response.cookies.set(PAID_COOKIE, String(paidCredits - 1), {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+        path: "/",
+      });
+    } else {
+      const updatedCookie = buildUpdatedCookie(req, cookieKey);
+      response.cookies.set(COOKIE_NAME, updatedCookie, {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 30,
+        sameSite: "lax",
+        path: "/",
+      });
+    }
 
     return response;
   } catch (err) {

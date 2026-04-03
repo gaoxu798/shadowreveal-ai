@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 /* ─────────────────────────────────────────────────────────────
    Icons — inline SVG, no lucide-react dep needed
@@ -64,11 +66,11 @@ const TIERS = [
     id: "crafter",
     name: "Theory Crafter",
     subtitle: "The pact most seekers choose.",
-    price: "$4.99",
+    price: "$3.99",
     period: "one-time credit pack",
     badge: "Most Popular",
     hero: true,
-    cta: "Seal the Pact — $4.99",
+    cta: "Seal the Pact — $3.99",
     features: [
       { text: "50 Reveals",                    included: true },
       { text: "High resolution output",        included: true },
@@ -84,11 +86,11 @@ const TIERS = [
     id: "sovereign",
     name: "The Sovereign Pass",
     subtitle: "For those who demand dominion.",
-    price: "$14.99",
+    price: "$13.99",
     period: "one-time credit pack",
     badge: null,
     hero: false,
-    cta: "Claim Sovereignty — $14.99",
+    cta: "Claim Sovereignty — $13.99",
     features: [
       { text: "200 Reveals",                   included: true },
       { text: "4K upscaling",                  included: true },
@@ -105,9 +107,48 @@ const TIERS = [
 /* ─────────────────────────────────────────────────────────────
    Single Tier Card
 ───────────────────────────────────────────────────────────── */
+const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? "";
+
+async function handlePayPalCheckout(planId: string, onSuccess: (credits: number) => void) {
+  try {
+    // Create order
+    const orderRes = await fetch("/api/paypal/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ planId }),
+    });
+    const { orderId } = await orderRes.json();
+    if (!orderId) throw new Error("Failed to create order");
+
+    // Open PayPal approval URL
+    const approvalUrl = `https://www.sandbox.paypal.com/checkoutnow?token=${orderId}`;
+    const popup = window.open(approvalUrl, "paypal_checkout", "width=500,height=700");
+
+    // Poll for popup close
+    const pollTimer = setInterval(async () => {
+      if (popup?.closed) {
+        clearInterval(pollTimer);
+        // Capture order
+        const captureRes = await fetch("/api/paypal/capture-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId }),
+        });
+        const data = await captureRes.json();
+        if (data.success) {
+          onSuccess(data.credits);
+        }
+      }
+    }, 500);
+  } catch {
+    toast.error("Payment error", { description: "Could not initiate checkout." });
+  }
+}
+
 function TierCard({ tier, index }: { tier: (typeof TIERS)[number]; index: number }) {
   const isHero      = tier.hero;
   const isSovereign = tier.id === "sovereign";
+  const [paying, setPaying] = useState(false);
 
   return (
     <motion.div
@@ -256,7 +297,19 @@ function TierCard({ tier, index }: { tier: (typeof TIERS)[number]; index: number
         <motion.button
           whileHover={{ scale: isHero ? 1.05 : 1.02 }}
           whileTap={{ scale: 0.975 }}
-          className="relative w-full rounded-xl overflow-hidden px-6 py-3.5 text-[13px] tracking-[0.1em] font-medium transition-all duration-300"
+          disabled={paying}
+          onClick={() => {
+            if (tier.id === "wanderer") { document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" }); return; }
+            setPaying(true);
+            handlePayPalCheckout(tier.id, (credits) => {
+              setPaying(false);
+              toast.success("Payment successful!", {
+                description: `${tier.id === "crafter" ? 50 : 200} credits added to your account.`,
+                style: { borderLeft: "3px solid #b8860b" },
+              });
+            });
+          }}
+          className="relative w-full rounded-xl overflow-hidden px-6 py-3.5 text-[13px] tracking-[0.1em] font-medium transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
             fontFamily: "var(--font-heading)",
             background: isHero
@@ -275,7 +328,6 @@ function TierCard({ tier, index }: { tier: (typeof TIERS)[number]; index: number
               : "none",
           }}
         >
-          {/* Hover shimmer on hero */}
           {isHero && (
             <motion.span
               className="absolute inset-0 pointer-events-none"
@@ -284,7 +336,9 @@ function TierCard({ tier, index }: { tier: (typeof TIERS)[number]; index: number
               style={{ background: "linear-gradient(135deg, rgba(220,38,38,0.22) 0%, rgba(184,134,11,0.08) 55%, transparent 80%)" }}
             />
           )}
-          <span className="relative z-10">{tier.cta}</span>
+          <span className="relative z-10">
+            {paying ? "Redirecting to PayPal..." : tier.cta}
+          </span>
         </motion.button>
       </div>
     </motion.div>
