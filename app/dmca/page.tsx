@@ -16,7 +16,7 @@ export default function DmcaPage() {
 
       <section>
         <h2 style={{ color: "rgba(228,228,231,0.85)", fontFamily: "var(--font-heading)", fontSize: "1rem", marginBottom: "0.5rem" }}>How to Submit a Takedown Request</h2>
-        <p>Send an email to <span style={{ color: "rgba(184,134,11,0.85)" }}>dmca@shadowreveal.ai</span> with the subject line <strong style={{ color: "rgba(228,228,231,0.7)" }}>"DMCA Takedown Request"</strong> and include the following:</p>
+        <p>Send an email to <span style={{ color: "rgba(184,134,11,0.85)" }}>dmca@shadowreveal.ai</span> with the subject line <strong style={{ color: "rgba(228,228,231,0.7)" }}>&quot;DMCA Takedown Request&quot;</strong> and include the following:</p>
         <ul style={{ marginTop: "0.75rem", paddingLeft: "1.5rem", listStyleType: "disc" }}>
           <li>Your full legal name and contact information</li>
           <li>A description of the copyrighted work you claim has been infringed</li>
@@ -29,7 +29,7 @@ export default function DmcaPage() {
 
       <section>
         <h2 style={{ color: "rgba(228,228,231,0.85)", fontFamily: "var(--font-heading)", fontSize: "1rem", marginBottom: "0.5rem" }}>Response Time</h2>
-        <p>We will acknowledge valid DMCA notices within <strong style={{ color: "rgba(184,134,11,0.85)" }}>72 hours</strong> and take appropriate action, which may include removing the content and terminating repeat infringers' accounts.</p>
+        <p>We will acknowledge valid DMCA notices within <strong style={{ color: "rgba(184,134,11,0.85)" }}>72 hours</strong> and take appropriate action, which may include removing the content and terminating repeat infringers&apos; accounts.</p>
       </section>
 
       <section>

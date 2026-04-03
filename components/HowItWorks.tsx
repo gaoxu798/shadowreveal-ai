@@ -67,7 +67,7 @@ const STEPS = [
 /* ─────────────────────────────────────────────────────────────
    Single step card
 ───────────────────────────────────────────────────────────── */
-function StepCard({ step, index }: { step: (typeof STEPS)[0]; index: number }) {
+function StepCard({ step }: { step: (typeof STEPS)[0]; index: number }) {
   return (
     <motion.div
       variants={{

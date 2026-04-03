@@ -31,7 +31,7 @@ export default function SupportPage() {
 
       <section>
         <h2 style={{ color: "rgba(228,228,231,0.85)", fontFamily: "var(--font-heading)", fontSize: "1rem", marginBottom: "0.5rem" }}>DMCA & Copyright</h2>
-        <p>If you believe your copyrighted work has been used improperly on our platform, please submit a DMCA takedown request via our <a href="/dmca" style={{ color: "rgba(184,134,11,0.75)" }}>DMCA page</a> or email us directly with the subject line "DMCA Takedown Request."</p>
+        <p>If you believe your copyrighted work has been used improperly on our platform, please submit a DMCA takedown request via our <a href="/dmca" style={{ color: "rgba(184,134,11,0.75)" }}>DMCA page</a> or email us directly with the subject line &quot;DMCA Takedown Request.&quot;</p>
       </section>
 
       <section>

@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 function seed(n: number) {
-  let s = n * 1664525 + 1013904223;
+  const s = n * 1664525 + 1013904223;
   return ((s >>> 0) % 1000) / 1000;
 }
 

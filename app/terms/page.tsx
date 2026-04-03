@@ -11,7 +11,7 @@ export default function TermsPage() {
     <LegalLayout title="Terms of Service" subtitle="Last updated: April 2026">
       <section>
         <h2 style={{ color: "rgba(228,228,231,0.85)", fontFamily: "var(--font-heading)", fontSize: "1rem", marginBottom: "0.5rem" }}>1. Acceptance of Terms</h2>
-        <p>By accessing or using ShadowReveal.AI ("the Service"), you agree to be bound by these Terms of Service. If you do not agree, please do not use the Service.</p>
+        <p>By accessing or using ShadowReveal.AI (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree, please do not use the Service.</p>
       </section>
 
       <section>
@@ -36,7 +36,7 @@ export default function TermsPage() {
 
       <section>
         <h2 style={{ color: "rgba(228,228,231,0.85)", fontFamily: "var(--font-heading)", fontSize: "1rem", marginBottom: "0.5rem" }}>6. Disclaimer of Warranties</h2>
-        <p>The Service is provided "as is" without warranty of any kind. We do not guarantee uninterrupted availability or specific output quality. AI-generated content is fictional and for entertainment purposes only.</p>
+        <p>The Service is provided &quot;as is&quot; without warranty of any kind. We do not guarantee uninterrupted availability or specific output quality. AI-generated content is fictional and for entertainment purposes only.</p>
       </section>
 
       <section>
