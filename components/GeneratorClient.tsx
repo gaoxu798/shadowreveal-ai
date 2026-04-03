@@ -643,12 +643,19 @@ function VoidTextarea({
 /* ═══════════════════════════════════════════════════════════
    MAIN
 ═══════════════════════════════════════════════════════════ */
+type Credits = { paid: number; freeRemaining: number; freeLimit: number; isLoggedIn: boolean } | null;
+
 export default function GeneratorClient() {
   const [phase,        setPhase]        = useState<Phase>("idle");
   const [prompt,       setPrompt]       = useState("");
   const [result,       setResult]       = useState<string | null>(null);
   const [resultImage,  setResultImage]  = useState<string | null>(null);
   const [phraseIndex,  setPhraseIndex]  = useState(0);
+  const [credits,      setCredits]      = useState<Credits>(null);
+
+  useEffect(() => {
+    fetch("/api/credits").then(r => r.json()).then(setCredits).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (phase !== "generating") { setPhraseIndex(0); return; }
@@ -695,6 +702,8 @@ export default function GeneratorClient() {
       setResultImage(data.imageUrl);
       setResult(data.loreText || null);
       setPhase("revealed");
+      // Refresh credit balance
+      fetch("/api/credits").then(r => r.json()).then(setCredits).catch(() => {});
       toast.success("Truth Revealed.", {
         description: "1 credit deducted. The void remembers.",
         style: { borderLeft: "3px solid #b8860b" },
@@ -734,6 +743,26 @@ export default function GeneratorClient() {
         }}
         transition={{ duration: isGenerating ? 1.05 : 5.5, repeat: Infinity, ease: "easeInOut" }}
       />
+
+      {/* ── Credits badge ── */}
+      {credits !== null && (
+        <div className="flex justify-end mb-4">
+          {credits.paid > 0 ? (
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] tracking-[0.08em]"
+              style={{ fontFamily: "var(--font-body)", background: "rgba(184,134,11,0.12)", border: "1px solid rgba(184,134,11,0.25)", color: "rgba(184,134,11,0.9)" }}>
+              ⚜ {credits.paid} credits remaining
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] tracking-[0.08em]"
+              style={{ fontFamily: "var(--font-body)", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(156,163,175,0.7)" }}>
+              {credits.freeRemaining}/{credits.freeLimit} free {credits.isLoggedIn ? "" : "— "}
+              {!credits.isLoggedIn && (
+                <a href="/api/auth/signin" style={{ color: "rgba(184,134,11,0.8)", textDecoration: "underline" }}>sign in for 3</a>
+              )}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
 
