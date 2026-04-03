@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           model:      "Kwai-Kolors/Kolors",
           prompt:     fullImagePrompt,
-          image_size: "1024x1024",
+          image_size: hasPaidCredits ? "1280x1280" : "1024x1024",
         }),
       }),
       generateLoreText(userPrompt, apiKey),
